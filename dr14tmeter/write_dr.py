@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import time
 import dr14tmeter.dr14_global as dr14
 import dr14tmeter.table as table
 
@@ -180,6 +181,9 @@ class WriteDrExtended( WriteDr ) :
         tm.new_table()
         
         tm.new_head()
+        tm.add_title( "Dr14 T.meter %s " % dr14.dr14_version() )
+        tm.add_title( "log date: %s " % time.strftime("%Y-%m-%d %H:%M:%S"))
+        tm.append_empty_line()
         tm.append_separator_line()
         
         album_t = drm.meta_data.get_album_title()
@@ -189,15 +193,15 @@ class WriteDrExtended( WriteDr ) :
             self.set_loudness_war_db_compatible( False )
         
         if self.get_loudness_war_db_compatible() :
-        
+
             title = "" 
             
             if album_t == None :
-                title = " Analyzed folder:  " + album_dir 
+                title = "Analyzed folder:  " + album_dir 
             else:
-                title = " Analyzed: " + album_t 
+                title = "Analyzed: " + album_t 
                 if artist != None :
-                    title = title + " /  Artist: " + artist
+                    title = title + " / " + artist
             tm.add_title( title )
         
         else:
@@ -209,13 +213,13 @@ class WriteDrExtended( WriteDr ) :
                 if artist != None :
                     tm.add_title( " Artist: " + artist )
             
-        
         tm.end_head()
         
         tm.new_tbody()
         
         tm.append_separator_line()
-        tm.append_row( [ "DR", "Peak", "RMS", "Duration" , "Title [codec]" ] , 'h' )
+        tm.append_empty_line()
+        tm.append_row( [ "DR", " Peak\t", " RMS\t", "Duration" , "Track" ] , 'h' )
         tm.append_separator_line()
         
         list_bit = []
@@ -232,10 +236,10 @@ class WriteDrExtended( WriteDr ) :
             
             if drm.res_list[i]['dr14'] > dr14.min_dr() :
                 row = []
-                row.append( " DR%d" % drm.res_list[i]['dr14'] )
-                row.append( " %.2f" % drm.res_list[i]['dB_peak'] + ' dB' )
-                row.append( " %.2f" % drm.res_list[i]['dB_rms'] + ' dB' )
-                row.append( drm.res_list[i]['duration'] )
+                row.append( "DR%d" % drm.res_list[i]['dr14'] )
+                row.append( "%.2f" % drm.res_list[i]['dB_peak'] + ' dB' )
+                row.append( "%.2f" % drm.res_list[i]['dB_rms'] + ' dB' )
+                row.append( drm.res_list[i]['duration'] + "\t" )
                 
                 #print( "> " + drm.res_list[i]['file_name'] )
                 
@@ -252,13 +256,14 @@ class WriteDrExtended( WriteDr ) :
                     if nr == None :
                         nr = i + 1
                     
-                    row.append( "%02d - %s \t [%s]" % ( nr , tr_title , codec ) )
+                    row.append( "%02d - %s" % ( nr , tr_title ) )
                     
                 bitrate = drm.meta_data.get_value( curr_file_name , 'bitrate' )
                 bit = drm.meta_data.get_value( curr_file_name , 'bit' )
                 s_rate = drm.meta_data.get_value( curr_file_name , 'sampling_rate' )
                 
                 kbs = drm.meta_data.get_value( curr_file_name , 'bitrate' )
+                channels = drm.meta_data.get_value ( curr_file_name, 'channels' )
                 
                 if kbs != None :
                     sum_kbs += int( kbs )
@@ -271,27 +276,28 @@ class WriteDrExtended( WriteDr ) :
                     sampl_rate.append( s_rate )
                     
                 tm.append_row( row )
-        
+
         tm.end_tbody()
         
         tm.new_foot()
         tm.append_separator_line()
+        tm.append_empty_line()
                
-        tm.add_title( " Number of files:    " + str(len( drm.res_list )) )
-        tm.add_title( " Official DR value:  DR%d" % int(drm.dr14) )
+        tm.add_title( "Number of files:    " + str(len( drm.res_list )) )
+        tm.add_title( "Official DR value:  DR%d" % int(drm.dr14) )
         
         tm.append_empty_line()
         
-        tm.add_title( " Sampling rate: \t\t %s Hz" % sampl_rate[0] )
+        tm.add_title( "Samplerate:         %s Hz" % sampl_rate[0] )
+        tm.add_title( "Channels:           %s" % channels )
+
+        mf_bit = max( set( list_bit ) , key=list_bit.count )
+        tm.add_title( "Bits per sample:    %s bit" % ( mf_bit ) )
         
         if cnt > 0:
-            tm.add_title( " Average bitrate: \t\t %d kbs " % ( ( sum_kbs / 1000 ) / cnt )  )
+            tm.add_title( "Bitrate:            %d kbs " % ( ( sum_kbs / 1000 ) / cnt )  )
         
-        mf_bit = max( set( list_bit ) , key=list_bit.count )
-        tm.add_title( " Bits per sample: \t\t %s bit" % ( mf_bit ) )
-        
-        tm.append_empty_line()
-        tm.add_title( "Dr14 T.meter %s " % dr14.dr14_version() )
+        tm.add_title( "Codec:              %s" % codec.upper())
         
         tm.append_closing_line()
         tm.end_foot()

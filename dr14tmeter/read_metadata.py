@@ -176,6 +176,10 @@ class RetirveMetadata:
         if m != None:
             track['duration'] = float( m.group(1) )            
             
+        m = re.search( r"^channels=\s*(\d+)\s*$" , data_txt , re_flags )
+        if m != None:
+            track['channels'] = int( m.group(1) )            
+
         self.__read_stream_info(data_txt, track)
         
         self._tracks[f_key] = track    
