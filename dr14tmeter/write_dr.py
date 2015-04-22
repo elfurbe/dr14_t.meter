@@ -189,30 +189,16 @@ class WriteDrExtended( WriteDr ) :
         album_t = drm.meta_data.get_album_title()
         artist = drm.meta_data.get_album_artist()[0]
         
-        if not isinstance( tm , table.TextTable ) :
-            self.set_loudness_war_db_compatible( False )
+        title = "" 
         
-        if self.get_loudness_war_db_compatible() :
-
-            title = "" 
-            
-            if album_t == None :
-                title = "Analyzed folder:  " + album_dir 
-            else:
-                title = "Analyzed: " + album_t 
-                if artist != None :
-                    title = title + " / " + artist
-            tm.add_title( title )
-        
+        if album_t == None :
+            title = "Analyzed folder:  " + album_dir 
         else:
+            title = "Analyzed: " + album_t 
+            if artist != None :
+                title = title + " / " + artist
+        tm.add_title( title )
         
-            if album_t == None :
-                tm.add_title( " Analyzed folder:  " + album_dir )
-            else:
-                tm.add_title( " Album: " + album_t )
-                if artist != None :
-                    tm.add_title( " Artist: " + artist )
-            
         tm.end_head()
         
         tm.new_tbody()
